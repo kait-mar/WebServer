@@ -1,0 +1,11 @@
+
+The path to a Unix socket in Listen component !!
+selection algorithm:
+we look into the request's HOST header field :
+{
+    1/ by the liten directive
+    2/ by server_name directive
+    3/ by server_name with wildcard *
+}
+
+add the absence of host hf in request parsing.  A 400 (Bad Request) status code may be sent to any HTTP/1.1 

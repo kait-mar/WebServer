@@ -1,0 +1,6 @@
+#include "Filter.hpp"
+#include "MalFormedUrl.hpp"
+#include "PostWithNoBodyFilter.hpp"
+#include "TransferEncodingFilter.hpp"
+#include "BodySizeTooLarge.hpp"
+#include "FiltersManager.hpp"
