@@ -48,7 +48,7 @@ void Address::parse (Tokenizer& tokenizer) {
 bool	Address::operator==(const Address& adr)	{	return (address == adr.address);	}
 bool	Address::operator!=(const Address&adr)	{	return !operator==(adr);			}
 
-Port::Port ():  is_set (false), port (80) {}
+Port::Port ():  is_set (false), port (8080) {}
 Port::Port (const std::string& prt) {
 	port = ::atoi (prt.c_str ());
 	is_set = true;

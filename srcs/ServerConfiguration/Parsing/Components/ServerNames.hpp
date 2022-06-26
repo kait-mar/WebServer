@@ -20,7 +20,7 @@ class ServerNames: public SimpleComponent {
 		bool isSet () const;
 		bool empty () const;
 		void parse (Tokenizer& );
-		std::set <std::string>	getNames()	{	return (names);	}
+		std::set <std::string>	&getNames()	{	return (names);	}
 };
 
 #endif

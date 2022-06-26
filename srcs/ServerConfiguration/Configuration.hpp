@@ -11,7 +11,7 @@ class Configuration {
 	private:
 		static Configuration		*conf;
 		Component 					*UserHttpConfig;
-		static const unsigned int	keepalive = 750;
+		static const unsigned int	keepalive = 180;
 		Logger						logger;
 		Configuration ();
 	public:

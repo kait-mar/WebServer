@@ -1,6 +1,6 @@
 # 	The compilation ================================
-CFLAGS			= -Wall -Wextra -Werror -g
-CC 				= clang++ -g -fsanitize=address
+CFLAGS			= -Wall -Wextra -Werror
+CC 				= clang++ -g
 CPPVERSION 		= -std=c++98
 
 BINDIR		= bin
@@ -17,23 +17,23 @@ NAME = $(BINDIR)/webServer
 all : $(NAME)
 
 $(NAME): $(OBJS)
-	mkdir -p $(@D)
-	$(CC) $(CPPVERSION) $(CFLAGS) $(OBJS) -o $@
+	@mkdir -p $(@D)
+	@$(CC) $(CPPVERSION) $(CFLAGS) $(OBJS) -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	mkdir -p $(@D)
-	$(CC) $(CPPVERSION) $(CFLAGS) -MMD -c $< -o $@
+	@mkdir -p $(@D)
+	@$(CC) $(CPPVERSION) $(CFLAGS) -MMD -c $< -o $@
 
 -include $(DEB)
 
 clean :
-	rm -rf $(OBJS)
+	@rm -rf $(OBJS)
 
-re: clean all
+re: fclean all
 
 run:
-	./$(NAME) ConfigurationFiles/abc.conf
+	./$(NAME) ConfigurationFiles/Default.conf
 
 fclean : clean
-	rm -rf $(DEB)
-	rm -rf $(NAME)
+	@rm -rf $(DEB)
+	@rm -rf $(NAME)

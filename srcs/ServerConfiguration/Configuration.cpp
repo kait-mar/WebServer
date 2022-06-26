@@ -31,6 +31,7 @@ std::string Configuration::codeToReasonPhrase (unsigned short code) {
 	if (!ctop) {
 		ctop = new std::map<unsigned short, std::string> ();
 		(*ctop)	[200] = "OK";
+		(*ctop) [204] = "No Content";
 		(*ctop)	[201] = "Created";
 		(*ctop) [301] = "Moved Permanently";
 		(*ctop)	[400] = "Bad Request";

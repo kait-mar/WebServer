@@ -10,6 +10,8 @@ class ConnectionFactory {
 	public:
 		void setHandler (ConnectionsHandler *);
 		virtual Connection *create (int fd) const = 0;
+	protected:
+		bool setNonBlocking (int fd) const;
 };
 
 struct DataConnectionFactory: ConnectionFactory {

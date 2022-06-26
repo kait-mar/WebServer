@@ -7,6 +7,7 @@ class TransferEncodingFilter: public Filter {
 	public:
 		TransferEncodingFilter (): Filter (505) {}
 		bool apply (const Request& request) const {
+			std::cout << request.getHeaderFields ()["Transfer-Encoding"]  << std::endl;
 			if (request.getHeaderFields ().has ("Transfer-Encoding")) {
 				if (request.getHeaderFields ()["Transfer-Encoding"] != "chunked")
 					return false;

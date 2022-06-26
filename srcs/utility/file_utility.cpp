@@ -15,7 +15,7 @@ std::string readfromFile (int fd) {
 	ssize_t ret;
 	while (1) {
 		ret = ::read (fd, buff, 1024);
-		if (ret == 0) break;
+		if (ret <= 0) break;
 		buffer.append (buff, buff + ret);
 	}
 	return buffer;

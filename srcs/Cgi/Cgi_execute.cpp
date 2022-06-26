@@ -81,11 +81,11 @@ void 	Cgi_execute::cgi_method_get(void ) {
 //		flags = 415;
 	if (!uri._query.empty())
 	{
-		fd1 = ::open(gen_random(5).c_str(), O_CREAT | O_TRUNC| O_RDWR, 0666);
+		fd1 = ::open(".message_body.txt", O_CREAT | O_TRUNC| O_RDWR, 0666);
 		if (write (fd1, uri._query.c_str(), uri._query.size()) == -1)
 			flags = 500;
 		close (fd1);
-		fd1 = ::open(gen_random(5).c_str(), O_RDONLY, 0666);
+		fd1 = ::open(".message_body.txt", O_RDONLY, 0666);
 		if (fd1 == -1)
 			flags = 500;
 		env_map["QUERY_STRING"] = uri._query;
@@ -116,44 +116,14 @@ void 	Cgi_execute::cgi_method_get(void ) {
 		ualarm(5 * 1e6, 0);
 		if ((check = execve(path, argv, env)) == -1)
 		{
-			std::cout << "Error in exec\n";
 			flags = 500;
+			std::cout << "Error in exec\n"; 
 			exit(EXIT_FAILURE);
 		}
 	}
 	close(fd[1]);
 	waitpid(pid, NULL, WNOHANG);
 	ualarm(0,0);
-//	char *temp = (char *)calloc(sizeof(char), 100);
-//	int len = 0;
-//
-//	buf = NULL;
-//	while (read(fd[0], temp, 100))
-//	{
-//		if (strcmp(temp, "Error in exec\n") == 0)
-//		{
-//			flags = 500;
-//			break;
-//		}
-//		len += strlen(temp);
-//		if (buf)
-//		{
-//			char *tmp = strdup(buf);
-//			delete buf;
-//			buf = new char [len + 2];
-//			strcat(buf, tmp);
-//			strcat(buf, temp);
-//			delete tmp;
-//		}
-//		else if (len > 0)
-//		{
-//			buf  = new char[len + 2];
-//			strcat(buf, temp);
-//		}
-//	}
-//	close(this->fd[0]);
-//	if (temp)
-//		delete temp;
 }
 
 void	Cgi_execute::add_response_variables(URI uri)
@@ -173,14 +143,15 @@ void 	Cgi_execute::cgi_method_post(void ) {
 	char *argv[3];
 	int check;
 	char *path;
-	int fd1 = ::open(gen_random(5).c_str(), O_CREAT | O_TRUNC| O_RDWR);
+	int fd1 = ::open(".message_body.txt", O_CREAT | O_TRUNC| O_RDWR, 0666);
 	if (fd1 == -1)
-		flags = 505;
-	write (fd1, this->messageBody.c_str(), messageBody.size());
+		flags = 500;
+	if (write (fd1, this->messageBody.c_str(), messageBody.size()) == -1)
+		flags = 500;
 	close (fd1);
-	fd1 = ::open(gen_random(5).c_str(), O_RDONLY);
+	fd1 = ::open(".message_body.txt", O_RDONLY,0666);
 	if (pipe(fd) == -1)
-		flags = 505;
+		flags = 500;
 	env = fill_env(env_map);
 	argv[0] = strdup(_exec.c_str());
 	argv[1] = strdup(_path.c_str());
@@ -188,12 +159,12 @@ void 	Cgi_execute::cgi_method_post(void ) {
 //	argv[0] = strdup("/usr/bin/python3");
 //	argv[1] = strdup("/Users/molabhai/Desktop/Web_Server/cgi-bin/set_cookies.py");
 	argv[2] = NULL;
-	int flags = fcntl (fd[0], F_GETFL);
-	flags |= O_NONBLOCK;
-	fcntl (fd[0], F_SETFL, flags);
+	int flag = fcntl (fd[0], F_GETFL);
+	flag |= O_NONBLOCK;
+	fcntl (fd[0], F_SETFL, flag);
 	pid = fork();
 	if (pid == -1)
-		flags = 505;
+		flags = 500;
 	if (pid == 0)
 	{
 		signal(SIGALRM, alarm_handler);
@@ -209,7 +180,8 @@ void 	Cgi_execute::cgi_method_post(void ) {
 		ualarm(5 * 1e6, 0);
 		if ((check = execve(path, argv, env)) == -1)
 		{
-			std::cout << "Error in exec\n";
+			flags = 500;
+			std::cout << "Error in exec\n"; 
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -238,8 +210,9 @@ Response	*Cgi_execute::cgi_response(void )
 	this->cgi_execute();
 	char *temp = (char *)calloc(sizeof(char), 101);
 	int len = 0;
+	int ret;
 
-	while (read(fd[0], temp, 100))
+	while ((ret = read(fd[0], temp, 100)))
 	{
 		if (strcmp(temp, "Error in exec\n") == 0)
 		{
@@ -267,6 +240,8 @@ Response	*Cgi_execute::cgi_response(void )
 			temp = (char *)calloc(sizeof(char), 101);
 		}
 	}
+	if (ret < 0)
+		flags = 500;
 	close(this->fd[0]);
 	if (temp)
 		delete temp;
@@ -279,11 +254,6 @@ Response	*Cgi_execute::cgi_response(void )
 	if (buf)
 		free(buf);
 	cgiParser.parsing_cgi_response();
-	if (cgiParser.get_content_type().empty() && cgiParser.get_location().empty())
-	{
-		flags = 400;
-		return NULL;
-	}
 	cookies_map = cgiParser.get_cookies();
 	Response *res = _context->getResponse();
 	res->setVersion("HTTP/1.1");

@@ -37,12 +37,14 @@ void   ExecuteState::handle (void) {
 	}
 	Location	*loc = select.getLocation();
 	if (loc == NULL) {
-		int ret;
-		if ((ret = select.default_()) != 200)
-		{
-			context->TranslationTo (new ErrorState (ret));
-			return ;
-		}
+		ErrorPages	*error_page;
+		std::map <unsigned short, std::string>::iterator it;
+		if ((error_page = serv->getSimpleAttribute_<ErrorPages> ()) != NULL
+			&& (it = error_page->getErrorPages().find(404)) != error_page->getErrorPages().end())
+			context->TranslationTo (new ErrorState (404, it->second.c_str()));
+		else
+			context->TranslationTo (new ErrorState (404));
+		return ;
 	}
 	else
 	{
@@ -56,16 +58,40 @@ void   ExecuteState::handle (void) {
 			return;
 		}
 		AllowedMethods	*allowed_method = loc->getSimpleAttribute_<AllowedMethods> ();
+		std::set<std::string> implemented; implemented.insert("GET"); implemented.insert("POST");implemented.insert("DELETE");
+		if (implemented.find(context->getRequest()->get_requestLine()->getMethod()) == implemented.end())
+		{
+			ErrorPages	*error_page;
+			std::map <unsigned short, std::string>::iterator it;
+			if ((error_page = loc->getSimpleAttribute_<ErrorPages> ()) != NULL
+				&& (it = error_page->getErrorPages().find(501)) != error_page->getErrorPages().end())
+				context->TranslationTo (new ErrorState (501, it->second.c_str()));
+			else if ((error_page = serv->getSimpleAttribute_<ErrorPages> ()) != NULL
+				&& (it = error_page->getErrorPages().find(501)) != error_page->getErrorPages().end())
+				context->TranslationTo (new ErrorState (501, it->second.c_str()));
+			else
+				context->TranslationTo (new ErrorState (501));
+			return ;
+		}
 		if (allowed_method->getMethods().find(context->getRequest()->get_requestLine()->getMethod()) == allowed_method->getMethods().end())
-		{		
-			context->TranslationTo (new ErrorState (405));
+		{
+			ErrorPages	*error_page;
+			std::map <unsigned short, std::string>::iterator it;
+			if ((error_page = loc->getSimpleAttribute_<ErrorPages> ()) != NULL
+				&& (it = error_page->getErrorPages().find(405)) != error_page->getErrorPages().end())
+				context->TranslationTo (new ErrorState (405, it->second.c_str()));
+			else if ((error_page = serv->getSimpleAttribute_<ErrorPages> ()) != NULL
+				&& (it = error_page->getErrorPages().find(405)) != error_page->getErrorPages().end())
+				context->TranslationTo (new ErrorState (405, it->second.c_str()));
+			else
+				context->TranslationTo (new ErrorState (405));
 			return ;
 		}
 		ResponseFiller		responseFiller(context, serv, loc, context->getResponse());
 		responseFiller.fill();
 		if (responseFiller.is_cgi())
 		{
-			context->TranslationTo(new CgiState(responseFiller.cgi_path(), responseFiller.cgi_exec()));
+			context->TranslationTo(new CgiState(responseFiller.cgi_path(), responseFiller.cgi_exec(), serv, loc));
 			return ;
 		}
 		if (responseFiller.getError())
@@ -83,7 +109,7 @@ void   ExecuteState::handle (void) {
 			return ;
 		}
 	}
-	
+
 	OutputBuffer& output  = context->getOutputBuffer();
     output.setResponseToSend(*context->getResponse());
 	if (context->getRequest()->get_headerFields()->getHeader("Connection") == "Keep-Alive")

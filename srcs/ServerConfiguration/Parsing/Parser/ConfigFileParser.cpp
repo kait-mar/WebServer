@@ -17,11 +17,12 @@ Component* ConfigFileParser::parse () const {
 		std::cerr << "Can't open file " << path << std::endl;
 		return UserHttpConfig;
 	}
+	Tokenizer tokenizer (is);
+	UserHttpConfig = ComponentCreator::instance ()->create ("http");
 	try {
-		Tokenizer tokenizer (is);
-		UserHttpConfig = ComponentCreator::instance ()->create ("http");
 		UserHttpConfig->syntax_parse (tokenizer);
-		this->format (UserHttpConfig);		
+		this->format (UserHttpConfig);
+		//UserHttpConfig->pretty_print ();	
 	}
 	catch (std::exception& e) {
 		std::cerr << e.what () << std::endl;
@@ -39,7 +40,7 @@ void ConfigFileParser::format (Component *HttpConfig) const {
 		throw std::runtime_error ("root is required in http block\n");
 	BodySize *bodysize = HttpConfig->getSimpleAttribute_<BodySize> ();
 	if (!bodysize)
-		HttpConfig->addSubComponent (new BodySize (8));
+		HttpConfig->addSubComponent (new BodySize (80));
 
 	std::vector<Server *> vservers = HttpConfig->getSubComponents_<Server> ();
 	if (vservers.empty ())

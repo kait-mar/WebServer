@@ -80,7 +80,6 @@ bool RequestLine::parse (const std::string& input) {
 	//to check the CRLF !!
 	if (line.size() != 3)
 	{
-		std::cout << "request line is missing some component\n";
 		return false;
 		// ERROR !!!!!
 	}

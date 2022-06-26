@@ -20,13 +20,17 @@ void Logger::ErrorLog (const std::string& err) const {
 	if (errorfd >= 0) {
 		std::string tmp (httpDateTime ());
 		tmp += " " + err;
-		::write (errorfd, tmp.data (), tmp.size ());
+		if (::write (errorfd, tmp.data (), tmp.size ()) <= 0)
+			return;
 	}
 }
 
 void Logger::AccessLog (const std::string& err) const{
 	if (accessfd >= 0)
-		::write (accessfd, err.data (), err.size ());
+	{
+		if (::write (accessfd, err.data (), err.size ()) <= 0)
+			return;
+	}
 }
 
 void Logger::AccessLog (const std::string& log, const Connection& con) const {

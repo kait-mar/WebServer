@@ -6,7 +6,7 @@
 
 class BodySizeTooLarge: public Filter {
 	public:
-		BodySizeTooLarge (): Filter (414) {}
+		BodySizeTooLarge (): Filter (413) {}
 		bool apply (const Request& request) const {
 			if (request.getHeaderFields ().has ("Content-Length")) {
 				BodySize *maxBodySize = Configuration::instance ()->getConfigurations ()->getSimpleAttribute_<BodySize>();

@@ -68,7 +68,7 @@ Tokenizer& Tokenizer::operator++ () { ++current; return *this; }
 
 void Tokenizer::expect (const std::string& directive) {
 	if (current == tokens.end ())
-		throw std::runtime_error ("something is missing");
+		throw std::runtime_error (directive + " is missing at end of file ");
 	(*current).expect (directive);
 	++current;
 }

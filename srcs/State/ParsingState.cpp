@@ -47,7 +47,9 @@ void ParsingState::handle () {
 				return;
 			}
 		}
+		context->getRequest()->print ();
 		if (context->getRequest()->getHeaderFields ().has ("Content-Length")) {
+			std::cout << "here\n" << std::endl;
 			int size = ::atoi ((context->getRequest ()->getHeaderFields()["Content-Length"]).c_str ());
 			context->TranslationTo (new PayloadState (RAW, size));
 		}

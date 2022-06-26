@@ -24,6 +24,7 @@ dataConnection::~dataConnection () {
 	delete activity;
 	delete request;
 	delete response;
+	delete inputBuffer;
 	delete outputBuffer;
 	delete state;
 }

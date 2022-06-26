@@ -55,7 +55,6 @@ int		ResponseFiller::execute_get(RequestLine& line)
 				std::string	index = chooseIndex(ind->getIndexes());
 				if (index != "")
 				{
-					std::cout << index << std::endl;
 					CgiPass	*cgi_pass = location->getSimpleAttribute_<CgiPass> ();
 					if (cgi_pass != NULL)
 					{
@@ -203,24 +202,23 @@ int		ResponseFiller::execute_post(RequestLine &line)
 	if (upl != NULL)
 	{
 		std::string file = upload_file(upl->getRoot(), line, location);
-		if (file[file.size() - 1] == '/')
+		if (file[file.size() - 1] == '/' || access(file.c_str(), F_OK) == 0)
 		{
 			response->setStatusCode("403");
 			return 403;
 		}
-		if (access(file.c_str(), F_OK) != 0)
-		{
-			response->setStatusCode("406"); //internal server error
-			return 406;
-		}
-		int fd = ::open(file.c_str() , O_CREAT | O_RDWR | O_TRUNC);
+		int fd = ::open(file.c_str() , O_CREAT | O_RDWR | O_TRUNC, 0666);
 		if (fd < 0)
 		{
 			response->setStatusCode("500"); //internal server error
 			return 500;
 		}
 		std::string	buffer = context->getRequest()->getRequestBody().body();
-		::write(fd, buffer.c_str(), buffer.size());
+		if (::write(fd, buffer.c_str(), buffer.size()) < 0)
+		{
+			response->setStatusCode("500"); //internal server error
+			return 500;
+		}
 		response->setStatusCode("201");
 		fill_headers(ressource);
 		response->setVersion("HTTP/1.1");

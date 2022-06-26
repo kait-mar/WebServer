@@ -15,7 +15,7 @@
 #include "../State/ErrorState.hpp"
 #include "../Cgi/Cgi_response.hpp"
 
-CgiState::CgiState(std::string &url, std::string&  exec) : _url(url), _exec(exec) {}
+CgiState::CgiState(std::string &url, std::string&  exec, Server *serv, Location *loc) : _url(url), _exec(exec), _server(serv), _location(loc) {}
 
 void   CgiState::handle (void) {
 	OutputBuffer& output  = context->getOutputBuffer();
@@ -27,7 +27,16 @@ void   CgiState::handle (void) {
 	res = cgi.cgi_response();
 	if (res == NULL)
 	{
-		this->context->TranslationTo(new ErrorState(cgi.get_flags()));
+		ErrorPages	*error_page;
+		std::map <unsigned short, std::string>::iterator it;
+		if ((error_page = _location->getSimpleAttribute_<ErrorPages> ()) != NULL
+			&& (it = error_page->getErrorPages().find(cgi.get_flags())) != error_page->getErrorPages().end())
+			context->TranslationTo (new ErrorState (cgi.get_flags(), it->second.c_str()));
+		else if ((error_page = _server->getSimpleAttribute_<ErrorPages> ()) != NULL
+			&& (it = error_page->getErrorPages().find(cgi.get_flags())) != error_page->getErrorPages().end())
+			context->TranslationTo (new ErrorState (cgi.get_flags(), it->second.c_str()));
+		else
+			this->context->TranslationTo(new ErrorState(cgi.get_flags()));
 		return;
 	}
 	else

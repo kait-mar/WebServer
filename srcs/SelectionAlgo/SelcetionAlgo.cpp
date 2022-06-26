@@ -27,22 +27,27 @@ Server  *SelectionAlgo::getServer()
 			i--;
 		}
 	}
-	if (servers.size() == 1)
-    {
-        server = servers[0];
-        return server ;
-    }
+//	if (servers.size() == 1)
+//    {
+//        server = servers[0];
+//        return server ;
+//    }
+
 	if (host.is_server_name && host._host != "localhost")
 	{
-		for (size_t i = 0; i < servers.size(); i++)
+		for (std::vector<Server*>::iterator it = servers.begin(); it != servers.end(); it++)
 		{
-			server_name = servers[i]->getSimpleAttribute_<ServerNames> ();
+			server_name = (*it)->getSimpleAttribute_<ServerNames> ();
 			if (server_name->getNames().find(host._host) == server_name->getNames().end())
-				servers.erase(servers.begin() + i);
+			{
+				it = servers.erase(it);
+				it--;
+			}
 		}
 	}
 	if (servers.size() == 1 || servers.size() == 2)
         server = servers[0];
+	
 	if (servers.size() == 0)
 		server = default_;
 	return server;

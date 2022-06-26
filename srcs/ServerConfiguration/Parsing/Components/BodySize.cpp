@@ -2,7 +2,7 @@
 
 #include "utils.hpp"
 
-#define MEGA 1024
+#define MEGA 1024 * 1024
 
 BodySize::BodySize (): SimpleComponent ("max_body_size"), size (0), already_set (false) {}
 BodySize::BodySize (unsigned int size_): SimpleComponent ("max_body_size") {
@@ -28,9 +28,10 @@ void BodySize::parse (Tokenizer& tokenizer) {
 	std::string sz = tokenizer.id ();
 	if (sz.back() == 'M' && all_of_ (sz.begin (), sz.end () - 1, is_digit ())) {
 		already_set = true;
-		size = atoi ((sz.substr(0, sz.size()).c_str() - 1)) * MEGA;
-		if (size > 50)
+		size = atoi (sz.substr(0, sz.size() - 1).c_str());
+		if (size > 80)
 			throw Error (tokenizer.error ("max_body_size is too large: accepted value below 50M"));
+		size *= MEGA;
 		++tokenizer;
 	}
 	else
